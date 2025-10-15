@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 
+const {isAdminAuth} = require("./middlewares/auth")
+
 // app.use("/home",(req, res)=>{
 //     res.send("This is home page");
 // });
@@ -17,20 +19,26 @@ const app = express();
 //     res.send("got the data")
 // });
 
-app.use("/hello", 
-    (req, res, next)=>{
-    res.send("This is hello page1");
-    next();
-},
-(req, res, next)=>{
-    res.send("This is hello page 2");
-    next();
-},
-(req, res, next)=>{
-    res.send("This is hello page 3");
-    next();
-},
-)
+app.use("/admin", isAdminAuth);
+
+app.get("/admin/getAllData",(req,res)=>{
+    res.send("getAllData")
+})
+
+// app.use("/hello", 
+//     (req, res, next)=>{
+//     res.send("This is hello page1");
+//     next();
+// },
+// (req, res, next)=>{
+//     res.send("This is hello page 2");
+//     next();
+// },
+// (req, res, next)=>{
+//     res.send("This is hello page 3");
+//     next();
+// },
+// )
 
 
 app.listen(7777, ()=>{
