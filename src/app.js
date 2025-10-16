@@ -1,29 +1,33 @@
 const express = require('express');
 const app = express();
 
-const {isAdminAuth} = require("./middlewares/auth")
+const connectDB = require("./config/database");
+const User = require('./models/user');
 
+app.post("/signup", async(req, res)=>{
+  const user = new User({
+    firstName:"Prabhas",
+    lastName:"uppalapati",
+    email:"Prabhas@gmail.com",
+    mobile:"8977732065"
+  });
 
-app.use("/admin", isAdminAuth);
-
-app.get("/admin/getAllData",(req,res)=>{
-    // throw new Error("thorw error");
-    try{
-        throw new Error("thorw error");
-    res.send("getAllData");
-
-    }catch{
-         res.status(500).send("something  wrong")
-    }
+  try{
+    await user.save();
+    res.send("User Saved SuccesFully")
+  }catch{
+        res.status(400).send("Api Failed")
+  }
 
 })
-
-app.use('/',(err, req, res, next)=>{
-    if(err){
-    res.status(500).send("something wnet wrong")
-    }
-})
-
+connectDB().then(()=>{
+    console.log("connect succesful DB");
+    
 app.listen(7777, ()=>{
     console.log('sucessful iwth 7777')
+})
+})
+.catch(()=>{
+    console.log("Errror in connecting db");
+    
 })
