@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userScheme = new mongoose.Schema({
     firstName:{
@@ -13,7 +14,12 @@ const userScheme = new mongoose.Schema({
         required:true,
         unique: true,
         lowercase: true,
-        trim:true
+        trim:true,
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Email is not valid")
+            }
+        }
     },
     mobile:{
         type: Number
