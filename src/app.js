@@ -27,6 +27,31 @@ app.post("/signup", async(req, res)=>{
 
 })
 
+app.post("/login", async (req, res)=>{
+  try{
+    console.log(req.body,"reques");
+    
+    const {email, password} = req.body;
+    const user = await User.findOne({email: email});
+    console.log(user, 'user');
+    
+    if(!user){
+      throw new Error("Email is not valid");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if(isPasswordValid){
+      res.send("Login SuccessFul");
+    }else{
+      throw new Error("Password is not valid")
+    }
+
+
+  }catch(Err){
+    res.status(400).send("something went wrong "+ Err.message);
+  }
+});
+
 app.get("/user", async(req, res)=>{
   const userEmail = req.body.email;
   try{
