@@ -1,18 +1,28 @@
 const express = require('express');
 const app = express();
-
+const {validateSignUpDate} = require("./utils/validation")
 const connectDB = require("./config/database");
 const User = require('./models/user');
+const bcrypt = require("bcrypt");
 app.use(express.json());
 app.post("/signup", async(req, res)=>{
-
-  const user = new User(req.body);
-
   try{
+    console.log(req.body,"request");
+    validateSignUpDate(req.body);
+    const {firstName, lastName, email, password } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: passwordHash
+    });
+    console.log(passwordHash, password);
+    
     await user.save();
     res.send("User Saved SuccesFully")
-  }catch{
-        res.status(400).send("Api Failed")
+  }catch(Err){
+        res.status(400).send("Api Failed "+ Err.message);
   }
 
 })
