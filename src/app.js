@@ -5,7 +5,7 @@ const connectDB = require("./config/database");
 const User = require('./models/user');
 const bcrypt = require("bcrypt");
 const cookieParser = require('cookie-parser');
-const JWT_SECRET = "devTinder$123";
+
 const {userAuth} = require("./middlewares/auth")
 app.use(express.json());
 app.use(cookieParser())
@@ -37,9 +37,9 @@ app.post("/login", async (req, res)=>{
     if(!user){
       throw new Error("Email is not valid");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
     if(isPasswordValid){
-      const token = await jwt.sign({_id: user._id}, JWT_SECRET, {expiresIn:"1d"});      
+      const token = await user.getJwt();      
       res.cookie("token", token);
       res.send("Login SuccessFul");
     }else{
