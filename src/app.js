@@ -4,10 +4,14 @@ const {validateSignUpDate} = require("./utils/validation")
 const connectDB = require("./config/database");
 const User = require('./models/user');
 const bcrypt = require("bcrypt");
+const cookieParser = require('cookie-parser');
+const JWT_SECRET = "devTinder$123";
 app.use(express.json());
+app.use(cookieParser())
+const jwt = require("jsonwebtoken");
+
 app.post("/signup", async(req, res)=>{
   try{
-    console.log(req.body,"request");
     validateSignUpDate(req.body);
     const {firstName, lastName, email, password } = req.body;
     const passwordHash = await bcrypt.hash(password, 10);
@@ -16,9 +20,7 @@ app.post("/signup", async(req, res)=>{
       lastName,
       email,
       password: passwordHash
-    });
-    console.log(passwordHash, password);
-    
+    });    
     await user.save();
     res.send("User Saved SuccesFully")
   }catch(Err){
@@ -28,19 +30,16 @@ app.post("/signup", async(req, res)=>{
 })
 
 app.post("/login", async (req, res)=>{
-  try{
-    console.log(req.body,"reques");
-    
+  try{    
     const {email, password} = req.body;
-    const user = await User.findOne({email: email});
-    console.log(user, 'user');
-    
+    const user = await User.findOne({email: email});    
     if(!user){
       throw new Error("Email is not valid");
     }
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if(isPasswordValid){
+      const token = await jwt.sign({_id: user._id}, JWT_SECRET);      
+      res.cookie("token", token);
       res.send("Login SuccessFul");
     }else{
       throw new Error("Password is not valid")
@@ -49,6 +48,28 @@ app.post("/login", async (req, res)=>{
 
   }catch(Err){
     res.status(400).send("something went wrong "+ Err.message);
+  }
+});
+
+app.get("/profile", async(req, res)=>{  
+  try{
+    const cookie = req.cookies;
+    const { token} = cookie;
+    console.log(token, 'token');
+    if(!token){
+      throw new Error("in valid token");
+    }
+    const decodedMessage =  await jwt.verify(token, JWT_SECRET);
+    console.log(decodedMessage,"decodedMessage");
+    const { _id } = decodedMessage;
+    const user = await User.findById(_id);
+    if(!user){
+      throw new Error("User not found");
+    }
+    res.send(user)
+
+  }catch{    
+    res.status(400).send("User not found"+ decodedMessage);
   }
 });
 
